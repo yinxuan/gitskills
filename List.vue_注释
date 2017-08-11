@@ -1,0 +1,143 @@
+<template>
+	<div class="animated fadeIn">
+
+		<div class="row mb10">
+			<div class="col-xs-12 clearfix">
+
+				<div class="pull-left f24">
+					<i class="fa fa-tags"></i>
+					<span>文章列表</span>
+				</div>
+				<div class="pull-right">
+					<button class="btn btn-primary" @click.stop.prevent="$router.push('/by/article/create')">
+						<i class="fa fa-send"></i>
+						<span>发布文章</span>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<input v-model="parameter"/>
+
+        <!--@click.stop.prevent: 停止阻碍，就是点击按钮发送的意思，requestSample是示例请求的意思-->
+		<button class="btn btn-primary" @click.stop.prevent="requestSample">
+			<i class="fa fa-send"></i>
+			<span>点击发送示例请求</span>
+		</button>
+
+        <!--打开筛选-->
+		<div class="mt10">{{response}}</div>
+		<div class="mt10" v-if="response">response：{{response.response}}</div>
+
+
+		<div class="row">
+
+			<div class="col-xs-12">
+				<NbFilter :pager="pager" :callback="search"></NbFilter>
+			</div>
+
+
+			<div class="col-xs-12">
+                <!--列表渲染v-for,渲染出文章列表，点击文章后通过路由router的内部地址（文章详情的页面地址加上需要查询的文章ID，即可定位到该文章详情-->
+				<div v-for="article in pager.articles" class="bg-white p10 mt10 cursor br4"
+				     @click.stop.prevent="$router.push('/by/article/detail/' + article.id)">
+
+					<div class="media">
+						<div class="pull-left">
+                            <!--img-rounded设置图片弧度为6，img-md设置图片大小为中等大小-->
+							<img class="img-rounded img-md" v-if="article.poster && article.poster.url" :src="article.poster.url">
+						</div>
+
+						<div class="pull-right action-buttons">
+							<a title="编辑" @click.stop.prevent="$router.push('/by/article/edit/'+article.id)">
+								<i class="fa fa-pencil text-info f20"></i>
+							</a>
+							<a href="javascript:void(0)" title="删除"
+							   @click.stop.prevent="article.confirmDel(refresh)">
+								<i class="fa fa-trash text-danger f20"></i>
+							</a>
+						</div>
+
+						<div class="media-body">
+                            <!--在media.less中media-body有一个display:table-cell的属性，可以让块级元素呈现表格布局的格式-->
+							<div class="cell-title">
+								<span class="f15">{{article.title}}</span>
+							</div>
+							<div class="cell-content">
+								<span class="mr10">#{{article.id}}</span>
+								<span class="mr10">作者:{{article.creator.nickname}}</span>
+								<span class="mr10"><i class="fa fa-clock-o"></i> {{article.createTime | humanTime}}</span>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+      <!--在用户点击搜索项目的时候会通过调用NbPager.vue所给信息内容刷新此页面，如果输入信息有误则输出"没有符合条件的项目"-->
+			<div class="col-xs-12 mt20">
+				<NbPager :pager="pager" :callback="refresh"></NbPager>
+			</div>
+
+		</div>
+	</div>
+</template>
+<script>
+
+	import NbFilter from '../../../common/widget/filter/NbFilter.vue'
+	import NbPager from '../../../common/widget/NbPager.vue'
+	import {MessageBox, Notification} from 'element-ui'
+
+	import Pager from  "../../../common/model/base/Pager"
+	import Article from  "../../../common/model/article/Article"
+
+	export default {
+
+        //data是vue中不可或缺的函数，通过返回值来让其他地方可以获取的到，这里获取的就是pager这个属性
+		data () {
+			return {
+				pager: new Pager(Article),
+                parameter: null,
+                response: null
+			}
+		},
+        //import进来了两个vue组件，这里需要用components来声明一下这两个组件
+		components: {
+			NbFilter,
+			NbPager
+		},
+		computed: {},
+		watch: {},
+        //methods方法里定义了三个函数，在@click点击事件和callback中会被调用
+		methods: {
+          requestSample() {
+            //控制台会根据当前页面的变化而打印出相应的信息，以便于观察
+            console.log("我是1");
+            let that = this;//网络求默认一部 异步环境下，this无法正确指向，需要定义新的空间保存this
+            let article = new Article();
+            article.httpSample(this.parameter, function (res) {
+              console.log("我是2");
+              that.response = res.data;
+            }, function (res) {
+              console.log("我是失败");
+            });
+            console.log("我是3");
+          },
+          search(){
+            this.pager.page = 0;
+            this.refresh()
+          },
+          refresh(){
+            this.pager.httpFastPage();
+          }
+        },
+		mounted(){
+
+			this.pager.enableHistory();
+			this.refresh();
+			console.log("test");
+			console.log(this.pager)
+		}
+	}
+
+</script>
