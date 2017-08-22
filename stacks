@@ -1,0 +1,132 @@
+#### 1.Environment 
+
+ Node.js npm
+
+javascript [ECMAScript 6](http://es6.ruanyifeng.com/)
+
+Webpack [入门半小时](http://www.jianshu.com/p/42e11515c10f#)
+
+#### 2.Vue
+
+[vuejs](http://vuejs.org) 普通的vue使用方式（重点！）
+
+[vuex](https://github.com/vuejs/vuex) 文件地址：src/common/store 使用方式：$store.
+
+[vue-router](https://github.com/vuejs/vue-router) 根据浏览器地址栏上的url显示不同的components做到动态网页和页面跳转的效果
+
+[vuex-router-sync](https://github.com/vuejs/vuex-router-sync) 
+
+[vue-resource](https://github.com/vuejs/vue-resource) 异步请求数据(ajax) 
+
+[vue-cli](https://github.com/vuejs/vue-cli) 创建种子项目（重点！）
+
+[vue-awesome](https://github.com/vuejs/awesome-vue) 轮播图？
+
+
+#### 3.Style
+
+
+[Font-awesome](http://fontawesome.io/icons/) 字体图标矢量图
+
+[Bootstrap](http://getbootstrap.com/) 仅用网格布局 row col-xx-xx
+
+只用css，js组件暂时没有用。
+
+[inspinia](http://inspinia.liyarou.com/) 某种统一风格网页样式的集合
+
+
+	3.2	Vue.js
+	Vue（读音 /vjuː/，类似于 view） 是一套构建用户界面的渐进式框架。与其他重量级前端框架不同，Vue 采用的是自底向上的增量开发设计。Vue 的核心库仅关注视图层，它的思想是：将视图与数据结合，视图影响数据，数据也能直接无条件影响视图（双向绑定）。它不仅易于上手，还便于与第三方库整合或者使用既有项目的功能。Vue.js 的目标是通过尽可能简单的 API 实现响应的数据绑定和组合的视图组件。
+	另外，Vue 还提供了原生态的单页应用开发框架：vue-cli ，完全能够为胜任复杂的单页应用程序的驱动。
+	
+	3.2.1 快速简化的数据绑定
+	声明式渲染：Vue.js 允许采用简洁的模板代码语法将数据声明式的渲染进入DOM ，如：
+	<div id=”app”>{{ message }}</div>
+	<script>
+	var app = new Vue({
+	      el: '#app',
+	      data: {message: 'Hello Teacher!'}
+	})
+	</script>
+	此时文本上的{{ message }}会被替换成’Hello Teacher !’当message 发生变化时文本上的{{ message }}也会随之变化。
+	除了文本插值，Vue.js 还支持通过‘：’（v-bind:）给标签属性插值，包括Class 和@（v-on:）给事件属性插值，如：
+	<img :src="message"> </ img >
+	<div :class=”message”></div>
+	<input @change=”message” />（当message 的值为方法时）
+	当然，这些插值都是动态绑定状态的。
+	此外Vue.js 还提供了如v-model、v-show、v-if、v-for 的语法糖（使用简单语法完成多行代码）分别表示默认输入数据，是否显示，是否加载，循环等，为开发者提供更多的数据控制视图方法。不仅如此，依托于动态绑定，当用户通过更改视图影响到所绑定的数据时，数据也会随之变化，实现“双向绑定”。最常用的方法就是：
+	<input v-model=”message” />
+	它等价于：
+	<input :vlue=”message” @input=”$event.target.value” />
+	通过这种特殊的声明，使得在交互时，程序员不必关注于数据的变化，把数据与视图相结合，复杂度统一转移到视图部分，减轻程序员负担，用程序员的话概况：“这种开发使我们感到非常爽！”
+	3.2.2 组合视图组件
+	组件系统是 Vue.js 的另一个重要概念，它是一种抽象，允许我们使用小型、可自包含和通常可复用的组件相互嵌套组合构建大型应用的编程理念。实际上，几乎所有具有一定规模的应用都可以抽象成为一个组件树，如图3：
+	 
+	图3：应用—组件树
+	在Vue.js 里，组件本质上是一个已经定义好了的Vue 实例，如果想在一个Vue 实例中使用另一个Vue 实例，只需简单的声明即可：
+	Vue.component(
+	'todo-item', {
+	    template: '<li> 这是个新的组件 </li>'
+	}) 
+	每个组件都包含一个Vue 实例的所有属性，其中template 是指这个组件所拥有的视图代码（HTML）。使用者和被使用者通过Vue 中的属性props（Vue. props）进行数据交互。Props 是可以包含自定义属性的对象，使用者利用‘：’（v-bind：）对被使用对象的props 内部属性进行赋值，被使用对象根据 props. parameter 进行数据变化。
+	如：
+	<div id="app-7"><myCompornent :title=" Hi Teacher "></ myCompornent ></div>
+	……
+	Vue.component(
+	' myCompornent ',
+	{
+	  props: [' title '],
+	  template: '<li>{{ myCompornent. title }}</li>'
+	})
+
+
+	3.3	JavaScript 面向对象化的MVC 编程
+	我们知道，JavaScript并不是一门面向对象化的语言，当它与其他面向对象化的语言组合使用时，就会表现出两种代码语法结构相差非常大，这种差距甚至深入影响到了思维中。当我们使用前后端分离的交互结构，后端必定使用Java 或PHP 这些面向对象的编程语言，这使得前后端难以被同一个人开发，前后端程序员交流障碍增大。JavaScript 的面向对象化编程就是为了克服这种障碍而诞生的，有了面向对象化的语法结构，模仿后端的MVC 框架实现起来就非常简单了。
+	3.3.1 JavaScript 面向对象化
+	封装：Javascript规定，每一个构造函数都有一个prototype属性（Object().prototype），指向另一个对象（Object.prototype ）。这个对象的所有属性和方法，都会被构造函数的实例继承（object.prototype）。本系统使用Prototype封装公有的方法和属性，为了简化操作和区分，类的属性写在构造函数中以赋值形式声明，而共有方法、静态属性写在prototype属性中声明，具体封装方法如下：
+	function Student() {
+		article: null	}
+	Student. prototype.TYPE = ”学生”;
+	Student. prototype. writeArticle = function() {
+		this.article = ” dissertation”;		};
+	声明完成后可直接以 student = new Student() 的形式调用构造函数返回类的实例。
+	继承：有了封装还不够，还需要继承。非prototype构造函数的继承非常简单，使用call 或apply 方法，将父类构造函数绑定在子类构造函数中。而父类prototype方法和属性也需要继承，任何一个prototype对象都有一个constructor属性，指向它（prototype）的构造函数。通过使用指定prototype 为父类的方法可以让子类的prototype属性与父类一模一样，而当子类需要定义额外的属性或方法时，将自己原有的prototype 赋值到prototype. constructor。具体实现方法如下：
+	Student.prototype = new Human();
+	Student.prototype.constructor = Student;
+	3.3.2 面向对象化后的MVC 编程
+	有了面向对象化的JavaScript，做出如下规定：
+	A.	所有对象继承于一个具有基本MVC结构的类Base；
+	B.	对象在构造函数中以赋值形式声明的属性代表M（Model）主管持久化对象；
+	C.	Base中定义一个http*() 函数和一个render() 函数作为C(Controller)主管请求响应控制；
+	D.	继承于Base 的所有类被实例化时所在的Vue 类就是对应的V(View)；
+	E.	Vue 类使用继承与Base 类的额外方法进行逻辑-数据控制。
+	这样前端的逻辑控制层与后端可以达到基本一致，最大化减少代码断层感。代码结构如图4：
+	 
+	图4：前端对象化设计后的MVC结构表
+	3.4	Bootstrap
+	Bootstrap 诞生于Twitter ，是目前最受欢迎的前端框架之一。Bootstrap 是基于HTML、CSS、JAVASCRIPT ，由Twitter 的设计师Mark Otto 和Jacob Thornton 合作开发而成，是一个CSS/HTML 框架。Bootstrap 提供了优雅的HTML 和CSS 规范，其CSS 部分是由动态CSS 语言Less 写成，加上简洁灵活的特点使得Web 开发更加快捷便利。
+	Bootstrap 由基本结构、CSS 、组件、JavaScript 插件4部分组成，本系统主要使用Bootstrap 基本结构中的网格系统。
+	3.4.1 网格系统
+	Bootstrap 网格系统是一套流式网格系统，它的特点有两个：响应式、移动设备优先。
+	移动设备优先，意味着Bootstrap 网格系统在布局上是以小屏幕（手机、平板）开始。然后扩展到大屏幕（电脑），它优先设计更小的屏幕。响应式网格系统随着屏幕、窗口尺寸的增加，系统会自动最多分为12列。如图5：
+	 
+	图5：Bootstrap网格系统
+	Bootstrap 网格系统代码基本结构：
+	<div class="container">
+	   <div class="row">
+	      <div class="col-*-*"></div>
+	      <div class="col-*-*"></div>      
+	   </div>
+	   <div class="row">...</div>
+	</div>
+	<div class="container">....<div>
+	通过class 类：row 和col-*-* 的嵌套使用来确定内容是占多少列，通过媒体查询（查询屏幕或视窗的宽度）和响应式列重叠（即同一个内容可能有多个不同的列宽布局）来确定内容所占的具体列宽。表1总结了Bootstrap 网格系统是如何识别不同的并工作的：
+	表1：Bootstrap 网格系统媒体查询-行为表
+		<768px	≥768px	≥992px	≥1200px
+	最大容器宽度	None (auto)	750px	970px	1170px
+	Class 前缀	.col-xs-	.col-sm-	.col-md-	.col-lg-
+	网格行为	一直是水平的	以折叠开始和结束，断点两端是水平的	以折叠开始和结束，断点两端是水平的	以折叠开始和结束，断点两端是水平的
+	上文提过，Bootstrap 网格系统是以小屏幕优先设计，所以当对应媒体查询未指定时，Bootstrap 网格系统以更小的媒体查询作为基准表现行为。
+
+
+
