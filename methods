@@ -1,0 +1,303 @@
+OOP
+==
+
+我们前端所有和服务器会交互到的实例均采用面向对象的风格来编程，具体的要点如下：
+
+# 类的声明
+
+我们统一采用构造函数的方式来声明一个类，属性在构造函数中声明，没有初始值就设为`null`。
+
+给类添加方法就采用`XXX.prototype.yourMethod = function(){}`的格式来声明。
+
+下面是一个典型的使用用例
+
+```javascript
+
+function Father() {
+	this.errorMessage = null;
+	this.editMode = false;
+}
+
+Father.prototype.hello = function (name) {
+	console.log("我是Father中的："+name);
+}
+
+```
+
+# 类的继承
+
+在继承的时候，第一要继承属性，也就是我们希望父类的属性就直接出现子类的属性列表中，而不是出现在子类的`prototype`列表中。
+
+第二要继承方法，父类的方法出现在子类的`prototype`中即可，因此`Child`去继承`Father`将会这么写：
+
+```javascript
+
+function Child() {
+	
+	//extend Father's Attributes.
+  Father.call(this, arguments);
+  
+	this.errorMessage = null;
+	this.editMode = false;
+}
+
+//extend Father's methods.
+Child.prototype = new Father();
+Child.prototype.constructor = Child;
+
+```
+
+## 调用父类方法
+
+如果是非同名的函数中，调用父类方法和调用自己的方法一样，使用`this.xxx()`即可，如果是在`Override`的方法中调用，那就必须使用如下的方式：
+
+```javascript
+
+Child.prototype.hello = function (name) {
+	
+	Father.prototype.render.hello(this, name);
+	console.log("我是Child中的："+name);
+}
+
+```
+
+# export 与 import
+
+## export
+
+`src/common/model`中的js文件均以`一个文件一个类`的形式呈现，因此每个文件中只有在构造函数前添加`export default`，如下：
+
+```javascript
+
+export default function Father() {
+	this.errorMessage = null;
+	this.editMode = false;
+}
+
+```
+## import
+
+如果需要引入其他类，因为我们export的约定，因此只需直接引入（没有大括号包裹）
+
+```javascript
+
+import Tank from "../tank/Tank";
+
+```
+
+
+
+# Base.js
+
+`Base`类是对象的最父级，所有在`src/common/model`中类均会直接或者间接的继承这个类。
+
+## 属性
+
+`Base`包含三个属性：`errorMessage`,`editMode`和`loading`
+
+`errorMessage`  在操作一个对象的时候，可能这个对象本身会出错，比如验证错误，比如和远程通信出现错误，那么这类错误均可以放置在`errorMessage`属性中，其他地方如果需要获取到错误信息，直接从`errorMessage`来拿即可。
+
+`editMode` 同样在操作一个对象的时候，有可能用户正在对这个对象进行编辑，随后可能会提交到服务器，那么这个时候`editMode` 就可以用来表示这种编辑状态。
+
+`loading` 表示和服务器交互时网络正在请求，这个字段在`NbPager.vue`中有使用到，当列表数据正在加载时，一个菊花历历在目。
+
+这三个属性的用法在`/by/survey/create`中有非常好的体现，可以阅读源码参考。
+
+## 方法
+
+### `render` 
+
+顾名思义，*渲染*。就是根据一个`JSON`（也就是普通的js类，比如`{}`，`new Object()`）的键值信息来更新自身的属性。大多数子类都需要`Override`这个类，因为从服务器获取的数据是`json`格式的，我们需要把`json`中的一些值解析到自己的类中来。如在`Article`类中：
+
+```javascript
+
+Article.prototype.render = function (obj) {
+
+	BaseEntity.prototype.render.call(this, obj);
+	this.releaseTime = str2Date(this.releaseTime);
+
+}
+
+```
+
+服务器返回的`releaseTime`只是一个字符串，但是我们需要把这个字符串转换成js的`Date`对象，那么就在调用父类的`render`方法之后去把releaseTime转换成`Date`对象。
+
+### `renderList` 
+
+这个方法不需要子类去`Override`,主要提供给子类使用。上面说到，子类中需要`Override` `Base`的`render`方法，目的是保证每个类能够逐层渲染，那么当我们遇到自己的某个属性是数组的时候怎么办，这时候就需要使用`renderList` 。如在`SurveyQuestion`中，我们有一个`choices`和一个`inputs`的数组，而这两个数组之中放的又是`SurveyChoice`和`SurveyInput`对象，那么这时候就这样调用：
+
+```javascript
+
+SurveyQuestion.prototype.render = function (obj) {
+
+	Base.prototype.render.call(this, obj);
+
+	this.renderList("choices", SurveyChoice);
+	this.renderList("inputs", SurveyInput);
+
+}
+
+```
+
+
+### `httpGet` 和`httpPost` 
+
+我们给`Base`赋予网络请求的能力，所有继承了`Base`的均可以使用`httpGet` 和`httpPost` 来发起网络请求，这两个方法签名一样`(url, params, successCallback, errorCallback) `。网络返回的结果会在`successCallback`和`errorCallback`的实参中。如果`errorCallback`没有指定，那么将按照默认的方式处理，即用`Notification`控件弹出错误信息。
+
+
+# BaseEntity.js
+
+这个类对应后端的`BaseEntity`，是所有`Entity`的基类。在后端，继承了`BaseEntity`就表示会进入到数据中。在前端，继承了`BaseEntity`就该类会对应有`增删改查`方法。因此这个类中主要围绕通用的`增删改查`进行。
+
+## 属性
+
+`id`:唯一标识 `sort`:在数据库中的排序值 `createTime`:创建时间 `deleted`:在数据库中是否被删除。
+
+## 方法
+
+### `httpSave` `getForm` `validate`
+
+对于增添和修改两种方法，我们统一用`save`，在`httpSave`到服务器之前,需要`validate`,验证没问题了，就需要`getForm` ，然后把Form中数据进行提交。
+
+顺着这种思路，那么继承了`BaseEntity`的子类就应该根据自己的具体情况去`Override` `getForm` 方法，Form应该对应着后端的`XXXForm`对象。子类同样需要根据自己具体情况去`Overide` `validate`方法。
+
+### `httpDel`
+
+提交一个删除请求
+
+### `httpDetail`
+
+去服务器获取详情，获取回来的详情数据会自动渲染到这个类身上。
+
+# Pager.js
+
+
+## 定义
+`Pager`主要用于去获取分页数据，如果你要想`Pager`支持你的分页，那么在Pager的构造方法中传入该类即可。
+
+```javascript
+
+let pager = new Pager(Article);
+
+```
+
+## 获取分页数据
+
+有了Pager的实例之后，只需一句话即可获取到服务器的分页数据
+
+```javascript
+
+this.pager.httpPage(params,function(response) {
+	console.log("success");
+} , function (errorMessage) {
+	console.log(errorMessage);
+});
+
+```
+
+## 显示分页数据
+
+当有了`Pager`实例后，配合`NbPager`使用就更加神通广大了。参考 /article/list
+
+	import NbPager from 'NbPager.vue'
+	components: {
+			NbPager
+	}
+	
+	<NbPager :pager="pager" :callback="refresh"></NbPager>
+	
+## 显示过滤筛选器
+
+给`NbFilter`控件传入一个`Pager`实例之后，可以得到筛选器。参考 /article/list
+
+	import NbFilter from 'NbFilter.vue'
+	components: {
+			NbFilter
+	}
+	
+	<NbFilter :pager="pager" :callback="search"></NbFilter>
+
+
+# 错误消息处理
+
+通过`http`去服务器获取数据，难免会出错，因此在`Base.js`中的`httpGet`和`httpPost`都添加了默认处理机制，即当errorCallback不传入任何参数的时候，页面中会`Notification`出错误的原因。如果是因为没有登录造成的错误，那么会自动转跳到登录页面。
+
+有了默认的错误处理，我们在`.vue`中可以写得相当简单了，比如要去远程获取文章详情，那么下面一句话就够了：
+
+```javascript
+
+this.article.httpDetail();
+
+```
+获取成功后，数据会自动装填进`this.article`对象中，如果失败，那么会弹出失败的信息提示，如：服务器暂时无法访问，该文章不存在等。如果因为没有登录而无法访问，那么就会自动转跳到登录页面。
+
+# ManyToOne 多对一
+
+举例：`SpaceRoom` 对 `SpaceBuilding`就是多对一的关系。
+
+在属性列表中
+
+```
+this.spaceBuilding = new SpaceBuilding();
+```
+
+`render`方法中
+```
+this.renderEntity("spaceBuilding", SpaceBuilding);
+```
+
+# OneToMany 一对多
+
+举例：`SpaceBuilding` 对 `SpaceRoom`就是一对多的关系。
+
+在属性列表中
+
+```
+this.spaceRooms = [];
+```
+
+`render`方法中
+```
+this.renderList("spaceRooms", SpaceRoom);
+```
+
+
+# OneToOne 一对一 (数据库中有xxx_id的一方)
+
+举例：`ProtocolSpace`（租赁合同） 对 `SpaceApply`（租赁申请）就是一对一的关系。
+
+在属性列表中
+
+```
+this.spaceApply = new SpaceApply();
+```
+
+`render`方法中
+```
+if (!one2one) {
+    this.renderEntity("spaceApply", SpaceApply, true);
+}
+```
+
+
+# OneToOne 一对一 (数据库中没有xxx_id的一方)
+
+举例：`SpaceApply`（租赁申请） 对 `ProtocolSpace`（租赁合同）就是一对一的关系。
+
+在属性列表中（注意此处为null,否则会无穷递归）
+
+```
+this.protocolSpace = null;
+```
+
+`render`方法中
+```
+if (!one2one) {
+    this.renderEntity("protocolSpace", ProtocolSpace, true);
+}
+```
+
+
+# 后记
+
+对于一般简单的操作，参考`Article.js`就可以。如果需要进阶请参考`Survey`整个系列。
